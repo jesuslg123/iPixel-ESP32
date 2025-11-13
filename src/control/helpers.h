@@ -6,6 +6,7 @@
 BluetoothPairing* getBluetoothDevice(AsyncWebServerRequest* request, const char* name) {
     String device = getParamString(request, name);
     BluetoothPairing* dev = bluetoothPairings.find(device);
+    if (!dev) throw std::invalid_argument("Device not found (please pair first)");
     if (!dev->_connected) throw std::invalid_argument("Device is (still) connecting");
     return dev;
 }

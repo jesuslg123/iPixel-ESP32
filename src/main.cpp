@@ -2,6 +2,7 @@
 #include "wifi/index.h"
 #include "bluetooth/index.h"
 #include "webserver/index.h"
+#include "control/index.h"
 
 void setup() {
   delay(2000);

@@ -98,7 +98,7 @@ class BluetoothPairing : public NimBLEClientCallbacks {
             Serial.println(")");
 
             //Print bytes as HEX
-            Serial.print("Data: ");
+            Serial.print("[Bluetooth] [" + id + "] Chunk Data: ");
             for (size_t i = 0; i < chunkSize; i++) {
                 if (command[i] < 0x10) Serial.print('0'); // leading zero for single-digit hex
                 Serial.print(command[i], HEX);

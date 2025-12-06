@@ -6,8 +6,8 @@
 
 const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
     {' ', FontChar{
-        .width = 1,
-        .data = {
+        1,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -19,10 +19,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0000
         }
-    }),
+    }},
     {'!', FontChar{
-        .width = 3,
-        .data = {
+        3,
+        {
             0x0000,
             0x0000,
             0x2000,
@@ -34,10 +34,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x2000
         }
-    }),
+    }},
     {'"', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x2800,
@@ -49,10 +49,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0000
         }
-    }),
+    }},
     {'#', FontChar{
-        .width = 8,
-        .data = {
+        8,
+        {
             0x0000,
             0x0000,
             0x1400,
@@ -64,10 +64,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x3F00,
             0x1400
         }
-    }),
+    }},
     {'$', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0800,
             0x1C00,
@@ -79,10 +79,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2A00,
             0x1C00
         }
-    }),
+    }},
     {'%', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3200,
@@ -94,10 +94,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2600,
             0x2600
         }
-    }),
+    }},
     {'&', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1000,
@@ -109,10 +109,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2400,
             0x1A00
         }
-    }),
+    }},
     {'\'', FontChar{
-        .width = 3,
-        .data = {
+        3,
+        {
             0x0000,
             0x0000,
             0x2000,
@@ -124,10 +124,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0000
         }
-    }),
+    }},
     {'(', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x0800,
@@ -139,10 +139,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x1000
         }
-    }),
+    }},
     {')', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x2000,
@@ -154,10 +154,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0800,
             0x1000
         }
-    }),
+    }},
     {'*', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x2800,
@@ -169,10 +169,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0000
         }
-    }),
+    }},
     {'+', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -184,10 +184,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0000
         }
-    }),
+    }},
     {',', FontChar{
-        .width = 3,
-        .data = {
+        3,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -199,10 +199,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x2000
         }
-    }),
+    }},
     {'-', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -214,10 +214,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0000
         }
-    }),
+    }},
     {'.', FontChar{
-        .width = 3,
-        .data = {
+        3,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -229,10 +229,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x2000
         }
-    }),
+    }},
     {'/', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0200,
@@ -244,10 +244,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x2000
         }
-    }),
+    }},
     {'0', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -259,10 +259,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'1', FontChar{
-        .width = 8,
-        .data = {
+        8,
+        {
             0x0000,
             0x0000,
             0x3800,
@@ -274,10 +274,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0800,
             0x3F00
         }
-    }),
+    }},
     {'2', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -289,10 +289,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x1000,
             0x3E00
         }
-    }),
+    }},
     {'3', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -304,10 +304,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'4', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0400,
@@ -319,10 +319,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0400,
             0x0400
         }
-    }),
+    }},
     {'5', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3E00,
@@ -334,10 +334,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'6', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -349,10 +349,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'7', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3E00,
@@ -364,10 +364,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x1000,
             0x2000
         }
-    }),
+    }},
     {'8', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -379,10 +379,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'9', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -394,10 +394,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {':', FontChar{
-        .width = 3,
-        .data = {
+        3,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -409,10 +409,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x2000
         }
-    }),
+    }},
     {';', FontChar{
-        .width = 3,
-        .data = {
+        3,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -424,10 +424,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x2000
         }
-    }),
+    }},
     {'=', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -439,10 +439,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0000
         }
-    }),
+    }},
     {'?', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -454,10 +454,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0800
         }
-    }),
+    }},
     {'@', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3E00,
@@ -469,10 +469,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x3E00
         }
-    }),
+    }},
     {'A', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0800,
@@ -484,10 +484,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x2200
         }
-    }),
+    }},
     {'B', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3C00,
@@ -499,10 +499,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x3C00
         }
-    }),
+    }},
     {'C', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -514,10 +514,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'D', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3800,
@@ -529,10 +529,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2400,
             0x3800
         }
-    }),
+    }},
     {'E', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3E00,
@@ -544,10 +544,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x3E00
         }
-    }),
+    }},
     {'F', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3E00,
@@ -559,10 +559,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x2000
         }
-    }),
+    }},
     {'G', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -574,10 +574,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1E00
         }
-    }),
+    }},
     {'H', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x2200,
@@ -589,10 +589,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x2200
         }
-    }),
+    }},
     {'I', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x3800,
@@ -604,10 +604,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x1000,
             0x3800
         }
-    }),
+    }},
     {'J', FontChar{
-        .width = 6,
-        .data = {
+        6,
+        {
             0x0000,
             0x0000,
             0x0400,
@@ -619,10 +619,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2400,
             0x1800
         }
-    }),
+    }},
     {'K', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x2200,
@@ -634,10 +634,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2400,
             0x2200
         }
-    }),
+    }},
     {'L', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x2000,
@@ -649,10 +649,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x3E00
         }
-    }),
+    }},
     {'M', FontChar{
-        .width = 10,
-        .data = {
+        10,
+        {
             0x0000,
             0x0000,
             0x2040,
@@ -664,10 +664,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2040,
             0x2040
         }
-    }),
+    }},
     {'N', FontChar{
-        .width = 9,
-        .data = {
+        9,
+        {
             0x0000,
             0x0000,
             0x3080,
@@ -679,10 +679,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2380,
             0x2080
         }
-    }),
+    }},
     {'O', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -694,10 +694,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'P', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3C00,
@@ -709,10 +709,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x2000
         }
-    }),
+    }},
     {'Q', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3E00,
@@ -724,10 +724,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2400,
             0x1A00
         }
-    }),
+    }},
     {'R', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3C00,
@@ -739,10 +739,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2400,
             0x2200
         }
-    }),
+    }},
     {'S', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x1C00,
@@ -754,10 +754,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'T', FontChar{
-        .width = 8,
-        .data = {
+        8,
+        {
             0x0000,
             0x0000,
             0x3F00,
@@ -769,10 +769,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0800,
             0x0800
         }
-    }),
+    }},
     {'U', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x2200,
@@ -784,10 +784,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'V', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x2200,
@@ -799,10 +799,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0800,
             0x0800
         }
-    }),
+    }},
     {'W', FontChar{
-        .width = 10,
-        .data = {
+        10,
+        {
             0x0000,
             0x0000,
             0x2040,
@@ -814,10 +814,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x1080,
             0x1080
         }
-    }),
+    }},
     {'X', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x2200,
@@ -829,10 +829,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x2200
         }
-    }),
+    }},
     {'Y', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x2200,
@@ -844,10 +844,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0800,
             0x0800
         }
-    }),
+    }},
     {'Z', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x3E00,
@@ -859,10 +859,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x3E00
         }
-    }),
+    }},
     {'[', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x3800,
@@ -874,10 +874,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x2000
         }
-    }),
+    }},
     {']', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x3800,
@@ -889,10 +889,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0800,
             0x0800
         }
-    }),
+    }},
     {'_', FontChar{
-        .width = 1,
-        .data = {
+        1,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -904,10 +904,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0000
         }
-    }),
+    }},
     {'a', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -919,10 +919,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2600,
             0x1A00
         }
-    }),
+    }},
     {'b', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x2000,
@@ -934,10 +934,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x3200,
             0x2C00
         }
-    }),
+    }},
     {'c', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -949,10 +949,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x1E00
         }
-    }),
+    }},
     {'d', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0200,
@@ -964,10 +964,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2600,
             0x1A00
         }
-    }),
+    }},
     {'e', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -979,10 +979,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x1E00
         }
-    }),
+    }},
     {'f', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x1800,
@@ -994,10 +994,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x1000,
             0x1000
         }
-    }),
+    }},
     {'g', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1009,10 +1009,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0200,
             0x1A00
         }
-    }),
+    }},
     {'h', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x2000,
@@ -1024,10 +1024,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x2200
         }
-    }),
+    }},
     {'i', FontChar{
-        .width = 3,
-        .data = {
+        3,
+        {
             0x0000,
             0x0000,
             0x2000,
@@ -1039,10 +1039,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x2000
         }
-    }),
+    }},
     {'j', FontChar{
-        .width = 6,
-        .data = {
+        6,
+        {
             0x0000,
             0x0000,
             0x0400,
@@ -1054,10 +1054,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0400,
             0x2400
         }
-    }),
+    }},
     {'k', FontChar{
-        .width = 6,
-        .data = {
+        6,
+        {
             0x0000,
             0x0000,
             0x2000,
@@ -1069,10 +1069,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2800,
             0x2400
         }
-    }),
+    }},
     {'l', FontChar{
-        .width = 3,
-        .data = {
+        3,
+        {
             0x0000,
             0x0000,
             0x2000,
@@ -1084,10 +1084,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x2000
         }
-    }),
+    }},
     {'m', FontChar{
-        .width = 10,
-        .data = {
+        10,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1099,10 +1099,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2440,
             0x2440
         }
-    }),
+    }},
     {'n', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1114,10 +1114,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x2200
         }
-    }),
+    }},
     {'o', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1129,10 +1129,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'p', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1144,10 +1144,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x2C00
         }
-    }),
+    }},
     {'q', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1159,10 +1159,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0200,
             0x1A00
         }
-    }),
+    }},
     {'r', FontChar{
-        .width = 6,
-        .data = {
+        6,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1174,10 +1174,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x2000
         }
-    }),
+    }},
     {'s', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1189,10 +1189,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0200,
             0x3C00
         }
-    }),
+    }},
     {'t', FontChar{
-        .width = 5,
-        .data = {
+        5,
+        {
             0x0000,
             0x0000,
             0x1000,
@@ -1204,10 +1204,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x1000,
             0x1800
         }
-    }),
+    }},
     {'u', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1219,10 +1219,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2200,
             0x1C00
         }
-    }),
+    }},
     {'v', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1234,10 +1234,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x1400,
             0x0800
         }
-    }),
+    }},
     {'w', FontChar{
-        .width = 10,
-        .data = {
+        10,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1249,10 +1249,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2A40,
             0x1080
         }
-    }),
+    }},
     {'x', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1264,10 +1264,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x1400,
             0x2200
         }
-    }),
+    }},
     {'y', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1279,10 +1279,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0800
         }
-    }),
+    }},
     {'z', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1294,10 +1294,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x2000,
             0x3E00
         }
-    }),
+    }},
     {'{', FontChar{
-        .width = 6,
-        .data = {
+        6,
+        {
             0x0000,
             0x0000,
             0x0C00,
@@ -1309,10 +1309,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x1000,
             0x1000
         }
-    }),
+    }},
     {'}', FontChar{
-        .width = 6,
-        .data = {
+        6,
+        {
             0x0000,
             0x0000,
             0x3000,
@@ -1324,10 +1324,10 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0800,
             0x0800
         }
-    }),
+    }},
     {'~', FontChar{
-        .width = 7,
-        .data = {
+        7,
+        {
             0x0000,
             0x0000,
             0x0000,
@@ -1339,5 +1339,5 @@ const std::map<char, FontChar> FONT_PIXELOID_SANS_10PX = {
             0x0000,
             0x0000
         }
-    })
+    }}
 };

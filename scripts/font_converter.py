@@ -231,7 +231,7 @@ class FontConverter:
         char_list = sorted(self.characters.keys())
         for idx, char in enumerate(char_list):
             font_char = self.characters[char]
-            
+
             # Escape special characters
             if char == "'":
                 escaped_char = "\\'"
@@ -243,27 +243,25 @@ class FontConverter:
                 escaped_char = "\\t"
             else:
                 escaped_char = char
-            
+
             lines.append(f"    {{'{escaped_char}', FontChar{{")
-            lines.append(f"        .width = {font_char.width},")
-            
+            lines.append(f"        {font_char.width},")
+
             # Generate bitmap data
-            lines.append("        .data = {")
-            
+            lines.append("        {")
             for row_idx, row_value in enumerate(font_char.bitmap):
                 hex_str = f"0x{row_value:04X}"
                 if row_idx < len(font_char.bitmap) - 1:
                     lines.append(f"            {hex_str},")
                 else:
                     lines.append(f"            {hex_str}")
-            
             lines.append("        }")
-            
+
             # Add comma to struct end (except for last character)
             if idx < len(char_list) - 1:
-                lines.append("    }),")
+                lines.append("    }},")
             else:
-                lines.append("    })")
+                lines.append("    }}")
         
         lines.append("};")
         

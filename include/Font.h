@@ -11,6 +11,10 @@ struct FontChar {
     std::vector<uint16_t> data; // 16px Height, 16-bit Width
 };
 
+// Generated font variants (Pixeloid Sans)
+#include "Font_PIXELOID_SANS_10PX.h"
+#include "Font_PIXELOID_SANS_16PX.h"
+
 const std::map<char, FontChar> FONT_VCR_OSD_MONO_16PX = {
     {' ', {9, { // ASCII 32
         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 

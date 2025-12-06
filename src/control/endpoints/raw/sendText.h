@@ -14,6 +14,7 @@ Endpoint ENDPOINT_control_raw_sendText("/control/raw/sendText", HTTP_GET, [](Asy
     long colorB = getParamLong(request, "colorB");
     long rainbow_mode = getParamLong(request, "rainbow_mode");
     long matrix_height = getParamLong(request, "matrix_height");
+    long font_height = request->hasParam("font_height") ? getParamLong(request, "font_height") : 16;
     device->queuePush(iPixelCommands::sendText(
         text,
         animation,
@@ -23,7 +24,8 @@ Endpoint ENDPOINT_control_raw_sendText("/control/raw/sendText", HTTP_GET, [](Asy
         colorG,
         colorB,
         rainbow_mode,
-        matrix_height
+        matrix_height,
+        font_height
     ));
     request->send(200, "text/plain", "OK");
 });

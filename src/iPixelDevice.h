@@ -43,7 +43,7 @@ public:
     void setClockMode(int style, int dayOfWeek, int year, int month, int day, bool showDate, bool format24);
     void setRhythmLevelMode(int style, const int levels[11]);
     void setRhythmAnimationMode(int style, int frame);
-    void sendText(const String& text, int animation, int save_slot, int speed, uint8_t colorR, uint8_t colorG, uint8_t colorB, int rainbow_mode, int matrix_height);
+    void sendText(const String& text, int animation, int save_slot, int speed, uint8_t colorR, uint8_t colorG, uint8_t colorB, int rainbow_mode, int matrix_height, int font_height = 16);
     void sendPNG(const std::vector<uint8_t> &pngData);
     void sendGIF(const std::vector<uint8_t> &gifData);
 

@@ -196,19 +196,39 @@ namespace iPixelCommands {
         return frame;
     }
 
-    std::vector<uint8_t> encodeText(const String& text, int matrix_height, uint8_t r, uint8_t g, uint8_t b) {
+    struct SelectedFont {
+        const std::map<char, FontChar>* map;
+        int height;
+    };
+
+    SelectedFont selectFont(int font_height) {
+        switch (font_height) {
+            case 7:
+                return { &FONT_PIXELOID_SANS_10PX, 7 };  // crop to 7 rows (matches official 0x14 header gap)
+            case 10:
+                return { &FONT_PIXELOID_SANS_10PX, 10 };
+            case 16:
+                return { &FONT_PIXELOID_SANS_16PX, 16 };
+            default:
+                throw std::invalid_argument("Unsupported font height: " + std::to_string(font_height));
+        }
+    }
+
+    std::vector<uint8_t> encodeText(const String& text, const std::map<char, FontChar>& font, int font_height, uint8_t r, uint8_t g, uint8_t b) {
         std::vector<uint8_t> frame;
-        uint8_t matrix_height_byte = (uint8_t)matrix_height;
+        uint8_t height_byte = (uint8_t)font_height;
 
         for (char character : text) {
-            auto it = FONT_VCR_OSD_MONO_16PX.find(character);
-            if (it == FONT_VCR_OSD_MONO_16PX.end()) continue;
+            auto it = font.find(character);
+            if (it == font.end()) continue;
 
             const FontChar& fontChar = it->second;
+            int rows = std::min((int)fontChar.data.size(), font_height);
             std::vector<uint8_t> char_bytes;
 
             // Convert each 16-bit line to bytes
-            for (uint16_t line_data : fontChar.data) {
+            for (int row = 0; row < rows; row++) {
+                uint16_t line_data = fontChar.data[row];
                 char_bytes.push_back((uint8_t)((line_data >> 8) & 0xFF));
                 char_bytes.push_back((uint8_t)(line_data & 0xFF));
             }
@@ -227,7 +247,7 @@ namespace iPixelCommands {
                 frame.push_back(g);
                 frame.push_back(b);
                 frame.push_back(char_width_byte);
-                frame.push_back(matrix_height_byte);
+                frame.push_back(height_byte);
                 frame.insert(frame.end(), char_bytes.begin(), char_bytes.end());
             }
         }
@@ -235,7 +255,7 @@ namespace iPixelCommands {
         return frame;
     }
 
-    std::vector<uint8_t> sendText(const String& text, int animation, int save_slot, int speed, uint8_t r, uint8_t g, uint8_t b, int rainbow_mode, int matrix_height) {
+    std::vector<uint8_t> sendText(const String& text, int animation, int save_slot, int speed, uint8_t r, uint8_t g, uint8_t b, int rainbow_mode, int matrix_height, int font_height) {
         checkRange("Text Length", text.length(), 1, 100);
         checkRange("Animation", animation, 0, 7);
         checkRange("Save Slot", save_slot, 1, 10);
@@ -245,6 +265,13 @@ namespace iPixelCommands {
         checkRange("colorB", b, 0, 255);
         checkRange("rainbow_mode", rainbow_mode, 0, 9);
         checkRange("matrix_height", matrix_height, 0, 255);
+        checkRange("font_height", font_height, 0, 255);
+
+        // Choose font and validate it fits the matrix
+        SelectedFont selectedFont = selectFont(font_height);
+        if (matrix_height < selectedFont.height) {
+            throw std::invalid_argument("Font height exceeds matrix height");
+        }
 
         // --- Validation ---
         if (text.length() == 0 || text.length() > 100) return {};
@@ -253,7 +280,7 @@ namespace iPixelCommands {
         // --- Header calculation ---
         const uint16_t HEADER_1_MG = 0x1D;
         const uint16_t HEADER_3_MG = 0x0E;
-        uint16_t header_gap = 0x06 + matrix_height * 0x02;
+        uint16_t header_gap = 0x06 + selectedFont.height * 0x02;
 
         uint16_t header_1_val = HEADER_1_MG + text.length() * header_gap;
         uint16_t header_3_val = HEADER_3_MG + text.length() * header_gap;
@@ -300,7 +327,7 @@ namespace iPixelCommands {
         payload.push_back(0x00);
 
         // Append encoded characters
-        std::vector<uint8_t> chars_bytes = encodeText(text, matrix_height, r, g, b);
+        std::vector<uint8_t> chars_bytes = encodeText(text, *selectedFont.map, selectedFont.height, r, g, b);
         payload.insert(payload.end(), chars_bytes.begin(), chars_bytes.end());
 
         // --- CRC ---

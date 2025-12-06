@@ -253,8 +253,8 @@ void iPixelDevice::setRhythmAnimationMode(int style, int frame) {
     queuePush(command);
 };
 
-void iPixelDevice::sendText(const String& text, int animation, int save_slot, int speed, uint8_t colorR, uint8_t colorG, uint8_t colorB, int rainbow_mode, int matrix_height) {
-    std::vector<uint8_t> command = iPixelCommands::sendText(text, animation, save_slot, speed, colorR, colorG, colorB, rainbow_mode, matrix_height);
+void iPixelDevice::sendText(const String& text, int animation, int save_slot, int speed, uint8_t colorR, uint8_t colorG, uint8_t colorB, int rainbow_mode, int matrix_height, int font_height) {
+    std::vector<uint8_t> command = iPixelCommands::sendText(text, animation, save_slot, speed, colorR, colorG, colorB, rainbow_mode, matrix_height, font_height);
     printPrefix();
     Serial.print("Text: text=");
     Serial.print(text);
@@ -273,7 +273,9 @@ void iPixelDevice::sendText(const String& text, int animation, int save_slot, in
     Serial.print("), rainbow_mode=");
     Serial.print(rainbow_mode);
     Serial.print(", matrix_height=");
-    Serial.println(matrix_height);
+    Serial.print(matrix_height);
+    Serial.print(", font_height=");
+    Serial.println(font_height);
     queuePush(command);
 };
 

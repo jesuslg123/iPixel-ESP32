@@ -248,35 +248,24 @@ namespace iPixelCommands {
             // Read width from PROGMEM
             uint8_t char_width = pgm_read_byte(&fontChar->width);
             
-            // Character header: 00 FF FF FF 00 00 00
-            frame.push_back(0x00);
-            frame.push_back(0xFF);
-            frame.push_back(0xFF);
-            frame.push_back(0xFF);
-            frame.push_back(0x00);
-            frame.push_back(0x00);
-            frame.push_back(0x00);
-
-            // Read and append 10 bytes of glyph data from PROGMEM
-            // The font data is stored as uint16_t[10], we need to extract bytes
-            for (int i = 0; i < 10; i++) {
+            // Read and append 20 bytes of glyph data from PROGMEM (includes header and trailer)
+            // The font data is stored as uint16_t[20], we need to extract bytes
+            for (int i = 0; i < 20; i++) {
                 uint16_t word = pgm_read_word(&fontChar->data[i]);
                 // Extract high byte (most significant byte first)
                 frame.push_back((uint8_t)((word >> 8) & 0xFF));
             }
-
-            // Trailing zeros: 00 00 00
-            frame.push_back(0x00);
-            frame.push_back(0x00);
-            frame.push_back(0x00);
         }
 
         return frame;
     }
 
     std::vector<uint8_t> encodeText(const String& text, const std::map<char, FontChar>& font, int font_height, uint8_t r, uint8_t g, uint8_t b) {
+        (void)r; (void)g; (void)b; (void)font_height; // Color is not encoded per-character for standard font payload
+
         std::vector<uint8_t> frame;
-        uint8_t height_byte = (uint8_t)font_height;
+        const std::array<uint8_t, 7> header = { 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00 };
+        const std::array<uint8_t, 3> trailer = { 0x00, 0x00, 0x00 };
 
         for (char character : text) {
             auto it = font.find(character);
@@ -298,17 +287,10 @@ namespace iPixelCommands {
             char_bytes = Helpers::switchEndian(char_bytes);
             char_bytes = Helpers::logicReverseBitsOrder(char_bytes);
 
-            uint8_t char_width_byte = (uint8_t)fontChar.width;
-
             if (!char_bytes.empty()) {
-                // "80" = use per-character color
-                frame.push_back(0x80);
-                frame.push_back(r);
-                frame.push_back(g);
-                frame.push_back(b);
-                frame.push_back(char_width_byte);
-                frame.push_back(height_byte);
+                frame.insert(frame.end(), header.begin(), header.end());
                 frame.insert(frame.end(), char_bytes.begin(), char_bytes.end());
+                frame.insert(frame.end(), trailer.begin(), trailer.end());
             }
         }
 
@@ -340,7 +322,9 @@ namespace iPixelCommands {
         // --- Header calculation ---
         const uint16_t HEADER_1_MG = 0x1D;
         const uint16_t HEADER_3_MG = 0x0E;
-        uint16_t header_gap = 0x06 + selectedFont.height * 0x02;
+        uint16_t header_gap = selectedFont.isCompact
+            ? (uint16_t)(0x06 + selectedFont.height * 0x02) // Matches compact Cusong layout (header+10 bytes+trailing zeros)
+            : (uint16_t)(0x0A + selectedFont.height * 0x02); // Standard fonts use 7-byte header + 3-byte trailer per char
 
         uint16_t header_1_val = HEADER_1_MG + text.length() * header_gap;
         uint16_t header_3_val = HEADER_3_MG + text.length() * header_gap;
@@ -396,9 +380,19 @@ namespace iPixelCommands {
         std::vector<uint8_t> chars_bytes;
         if (selectedFont.isCompact) {
             chars_bytes = encodeTextCompact(text, selectedFont.height, r, g, b);
+            Serial.println("Using Cusong 7px Compact Font");
+            Serial.println("Encoded text size: " + String(chars_bytes.size()) + " bytes");
         } else {
             chars_bytes = encodeText(text, *selectedFont.map, selectedFont.height, r, g, b);
+            Serial.println("Using Standard Font");
+            Serial.println("Encoded text size: " + String(chars_bytes.size()) + " bytes");
         }
+        for (size_t i = 0; i < chars_bytes.size(); i++) {
+            if (chars_bytes[i] < 0x10) Serial.print('0'); // leading zero for single-digit hex
+            Serial.print(chars_bytes[i], HEX);
+            Serial.print(' ');
+        }
+        Serial.println();
         payload.insert(payload.end(), chars_bytes.begin(), chars_bytes.end());
 
         std::vector<uint8_t> crc_bytes = Helpers::calculateCRC32Bytes(payload); //Byte 10-13

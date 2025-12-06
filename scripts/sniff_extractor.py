@@ -25,10 +25,11 @@ import re
 
 def clean_hex_data(raw_input):
     """Remove whitespace, formatting, and non-hex characters."""
-    # Remove common separators and whitespace
-    cleaned = re.sub(r'[\s\t\n\r]', '', raw_input)
-    # Remove any non-hex characters
+    # Remove ALL whitespace (spaces, tabs, newlines, carriage returns) - beginning, middle, end
+    cleaned = re.sub(r'\s+', '', raw_input)
+    # Remove any remaining non-hex characters
     cleaned = re.sub(r'[^0-9A-Fa-f]', '', cleaned)
+    # Convert to uppercase for consistency
     return cleaned.upper()
 
 
@@ -41,52 +42,86 @@ def hex_to_bytes(hex_string):
         return None
 
 
-def find_payload_section(byte_array):
+def remove_header_from_hex(hex_string):
     """
-    Find the start of the payload section.
-    Payload typically starts after Bluetooth header bytes.
-    Look for the first FFFF FF marker.
-    """
-    for i in range(len(byte_array) - 2):
-        if byte_array[i:i+3] == bytes.fromhex('FFFFFF'):
-            # Payload likely starts 13 bytes before first marker
-            # (to capture the first glyph)
-            payload_start = max(0, i - 13)
-            return payload_start
+    Remove Bluetooth header and payload settings from hex string.
+    Header: 15 bytes = 30 hex characters
+    Settings: 14 bytes = 28 hex characters
+    Total to remove: 29 bytes = 58 hex characters
     
-    print("Warning: No FFFF FF markers found. Using entire data as payload.")
-    return 0
-
-
-def find_character_markers(byte_array):
-    """Find all FFFF FF marker positions (character separators)."""
-    markers = []
-    for i in range(len(byte_array) - 2):
-        if byte_array[i:i+3] == bytes.fromhex('FFFFFF'):
-            markers.append(i)
-    return markers
-
-
-def extract_glyphs_from_markers(byte_array, markers):
+    Returns: Clean payload hex string
     """
-    Extract 10-byte glyphs using FFFF FF markers as references.
+    header_size = 15 * 2  # 15 bytes = 30 hex chars
+    settings_size = 14 * 2  # 14 bytes = 28 hex chars
+    total_remove = header_size + settings_size  # 58 hex chars
     
-    Protocol structure: glyph (10 bytes) + padding (3 bytes) + FFFF FF marker
-    So glyph is at: marker_pos - 13 to marker_pos - 3
+    if len(hex_string) <= total_remove:
+        print(f"Error: Hex string too short ({len(hex_string)} chars). Need at least {total_remove + 1} chars.")
+        return None
+    
+    # Remove first 58 hex characters
+    payload_hex = hex_string[total_remove:]
+    return payload_hex
+
+
+def split_hex_into_chunks(hex_string, chunk_size_bytes=20):
     """
-    glyphs = []
+    Split hex string into chunks.
+    Each chunk represents one character (20 bytes = 40 hex characters).
     
-    for marker_pos in markers:
-        glyph_start = marker_pos - 13
+    Returns: List of hex string chunks
+    """
+    chunk_size_hex = chunk_size_bytes * 2  # 20 bytes = 40 hex chars
+    chunks = []
+    
+    for i in range(0, len(hex_string), chunk_size_hex):
+        chunk = hex_string[i:i + chunk_size_hex]
         
-        # Validate we have enough data
-        if glyph_start < 0 or glyph_start + 10 > len(byte_array):
-            continue
-        
-        glyph_bytes = list(byte_array[glyph_start:glyph_start + 10])
-        glyphs.append(glyph_bytes)
+        # Only add complete chunks
+        if len(chunk) == chunk_size_hex:
+            chunks.append(chunk)
+        elif len(chunk) > 0:
+            print(f"Warning: Incomplete chunk at end ({len(chunk)} hex chars), skipping.")
     
-    return glyphs
+    return chunks
+
+
+def extract_glyph_from_hex_chunk(hex_chunk):
+    """
+    Extract 10-byte glyph from 20-byte hex chunk.
+    Remove first 7 bytes (14 hex chars) and last 3 bytes (6 hex chars).
+    Keep middle 10 bytes (20 hex chars).
+    
+    Structure: [14 hex header] + [20 hex glyph] + [6 hex trailer] = 40 hex chars
+    Returns: 20-character hex string (10 bytes)
+    """
+    if len(hex_chunk) != 40:
+        print(f"Warning: Expected 40 hex chars, got {len(hex_chunk)}.")
+        return None
+    
+    # Skip first 14 hex chars (7 bytes), take next 20 hex chars (10 bytes)
+    header_size = 7 * 2  # 7 bytes = 14 hex chars
+    glyph_size = 10 * 2  # 10 bytes = 20 hex chars
+    
+    glyph_hex = hex_chunk[header_size:header_size + glyph_size]
+    
+    return glyph_hex
+
+
+def hex_string_to_byte_list(hex_string):
+    """
+    Convert hex string to list of byte values.
+    "6E33" -> [0x6E, 0x33]
+    """
+    byte_list = []
+    for i in range(0, len(hex_string), 2):
+        byte_hex = hex_string[i:i+2]
+        byte_value = int(byte_hex, 16)
+        byte_list.append(byte_value)
+    return byte_list
+
+
+
 
 
 def visualize_glyph(glyph_bytes, width=8):
@@ -163,22 +198,53 @@ def main():
     
     cleaned_hex = clean_hex_data(raw_hex)
     print(f"Cleaned hex length: {len(cleaned_hex)} characters ({len(cleaned_hex)//2} bytes)")
+    print()
     
-    byte_array = hex_to_bytes(cleaned_hex)
-    if byte_array is None:
+    # Step 4: Remove header and settings from hex string
+    payload_hex = remove_header_from_hex(cleaned_hex)
+    if payload_hex is None:
         return False
     
-    # Step 4: Find markers
-    markers = find_character_markers(byte_array)
-    print(f"Found {len(markers)} FFFF FF markers at offsets: {markers}")
+    print(f"Payload length: {len(payload_hex)} hex chars ({len(payload_hex)//2} bytes)")
+    print(f"Clean payload (hex): {payload_hex[:100]}..." if len(payload_hex) > 100 else f"Clean payload (hex): {payload_hex}")
     print()
     
-    # Step 5: Extract glyphs
-    glyphs = extract_glyphs_from_markers(byte_array, markers)
-    print(f"Extracted {len(glyphs)} glyphs")
+    # Step 5: Split into character chunks (40 hex chars = 20 bytes each)
+    character_chunks = split_hex_into_chunks(payload_hex, chunk_size_bytes=20)
+    print(f"Found {len(character_chunks)} character chunks (40 hex chars = 20 bytes each)")
     print()
     
-    # Step 6: Map to characters
+    # Debug: Show first chunk
+    if character_chunks:
+        print("DEBUG: First chunk (40 hex chars = 20 bytes):")
+        print(f"  Hex: {character_chunks[0]}")
+        print()
+    
+    # Step 6: Extract glyphs from chunks
+    glyphs = []
+    for i, hex_chunk in enumerate(character_chunks):
+        glyph_hex = extract_glyph_from_hex_chunk(hex_chunk)
+        if glyph_hex:
+            # Convert hex string to byte list for final output
+            glyph_bytes = hex_string_to_byte_list(glyph_hex)
+            glyphs.append(glyph_bytes)
+            
+            # Debug: Show first glyph extraction
+            if i == 0:
+                header_hex = hex_chunk[:14]
+                trailer_hex = hex_chunk[34:]
+                print("DEBUG: First glyph extraction:")
+                print(f"  Full chunk (40 chars): {hex_chunk}")
+                print(f"  Header (14 chars):     {header_hex}")
+                print(f"  Glyph (20 chars):      {glyph_hex}")
+                print(f"  Trailer (6 chars):     {trailer_hex}")
+                print(f"  Glyph as bytes:        {' '.join(f'{b:02X}' for b in glyph_bytes)}")
+                print()
+    
+    print(f"Extracted {len(glyphs)} clean glyphs (10 bytes each)")
+    print()
+    
+    # Step 7: Map to characters
     print("=" * 80)
     print("CHARACTER MAPPING")
     print("=" * 80)

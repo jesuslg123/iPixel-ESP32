@@ -231,38 +231,46 @@ namespace iPixelCommands {
     }
 
     std::vector<uint8_t> encodeTextCompact(const String& text, int font_height, uint8_t r, uint8_t g, uint8_t b) {
-        (void)r; (void)g; (void)b; (void)font_height; (void)text; // Color is not encoded per-character for Cusong payload
+        (void)r; (void)g; (void)b; (void)font_height; // Color is not encoded per-character for Cusong payload
 
-        // FORCE HARDCODED "Hello" glyphs from official sniff for ALL text (testing only!)
-        Serial.print("encodeTextCompact called with text: '");
-        Serial.print(text);
-        Serial.print("' (length: ");
-        Serial.print(text.length());
-        Serial.println(")");
-        Serial.println("FORCING HARDCODED HELLO GLYPHS FOR TESTING!");
-        
-        std::vector<uint8_t> frame = {
-            // H
-            0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
-            0x63, 0x63, 0x63, 0x63, 0x7F, 0x63, 0x63, 0x63, 0x63, 0x63,
-            0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
-            // e
-            0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x3E, 0x63, 0x63, 0x7F, 0x03, 0x63, 0x3E,
-            0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
-            // l
-            0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
-            0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x38,
-            0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
-            // l
-            0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
-            0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x38,
-            0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
-            // o
-            0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x3E, 0x63, 0x63, 0x63, 0x63, 0x63, 0x3E,
-            0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
-        };
+        std::vector<uint8_t> frame;
+
+        for (char character : text) {
+            // Look up character in compact font
+            const CompactFontChar* fontChar = getCusong7pxChar(character);
+            if (fontChar == nullptr) {
+                Serial.print("WARNING: Character '");
+                Serial.print(character);
+                Serial.println("' not found in Cusong 7px font, skipping");
+                continue;
+            }
+
+            // Read width from PROGMEM
+            uint8_t char_width = pgm_read_byte(&fontChar->width);
+            
+            // Character header: 00 FF FF FF 00 00 00
+            frame.push_back(0x00);
+            frame.push_back(0xFF);
+            frame.push_back(0xFF);
+            frame.push_back(0xFF);
+            frame.push_back(0x00);
+            frame.push_back(0x00);
+            frame.push_back(0x00);
+
+            // Read and append 10 bytes of glyph data from PROGMEM
+            // The font data is stored as uint16_t[10], we need to extract bytes
+            for (int i = 0; i < 10; i++) {
+                uint16_t word = pgm_read_word(&fontChar->data[i]);
+                // Extract high byte (most significant byte first)
+                frame.push_back((uint8_t)((word >> 8) & 0xFF));
+            }
+
+            // Trailing zeros: 00 00 00
+            frame.push_back(0x00);
+            frame.push_back(0x00);
+            frame.push_back(0x00);
+        }
+
         return frame;
     }
 

@@ -261,7 +261,7 @@ namespace iPixelCommands {
             // o
             0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x3E, 0x63, 0x63, 0x63, 0x63, 0x63, 0x3E,
-            0x00, 0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
+            0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
         };
         return frame;
     }
@@ -358,21 +358,29 @@ namespace iPixelCommands {
 
         // --- Save slot ---
         // HARDCODED: Match official sniff bytes after CRC: 00 17 followed by character count
-        std::vector<uint8_t> save_slot_bytes = { 0x00, 0x17, (uint8_t)(text.length()) };
+        // std::vector<uint8_t> save_slot_bytes = { 0x00, 0x17, (uint8_t)(text.length()) };
+        std::vector<uint8_t> save_slot_bytes = { 0x00, 0x17 };
 
         // --- Payload ---
         std::vector<uint8_t> payload;
-        // Character count is now in save_slot_bytes, so payload starts with 00 01 01
-        payload.push_back(0x00); payload.push_back(0x01); payload.push_back(0x01); // fixed prefix
+        payload.push_back((uint8_t)(text.length()));
+        payload.push_back(0x00); 
+        payload.push_back(0x01); 
+        payload.push_back(0x01); // fixed prefix
 
         payload.push_back((uint8_t)(animation));
         payload.push_back((uint8_t)(speed));
         payload.push_back((uint8_t)(rainbow_mode));
 
-        // Append separator: FF FF FF 01 00 00 00 00 (matches official sniff)
-        payload.push_back(0xFF); payload.push_back(0xFF); payload.push_back(0xFF);
-        payload.push_back(0x01); payload.push_back(0x00); payload.push_back(0x00);
-        payload.push_back(0x00); payload.push_back(0x00);
+        // Append separator: FF FF FF 01 00 00 00 (matches official sniff)
+        payload.push_back(0xFF);
+        payload.push_back(0xFF); 
+        payload.push_back(0xFF);
+        payload.push_back(0x01); 
+        payload.push_back(0x00); 
+        payload.push_back(0x00);
+        payload.push_back(0x00); 
+        payload.push_back(0x00); //This should be part of the next character, not hardcoded here!
 
         // Append encoded characters
         std::vector<uint8_t> chars_bytes;
@@ -385,7 +393,7 @@ namespace iPixelCommands {
 
         // --- CRC ---
         // TEMPORARY HARDCODED: Use official CRC from sniff
-        std::vector<uint8_t> crc_bytes = { 0xCA, 0xD8, 0x70, 0xF9 }; //Byte 10-13
+        // std::vector<uint8_t> crc_bytes = { 0xCA, 0xD8, 0x70, 0xF9 }; //Byte 10-13
         
         // CRC must be calculated over text header + character data (everything after protocol header and CRC itself)
         // Build complete CRC input: save_slot_bytes (text count) + payload (rest of text header + character data)
@@ -393,6 +401,7 @@ namespace iPixelCommands {
         // crcData.insert(crcData.end(), save_slot_bytes.begin(), save_slot_bytes.end());
         // crcData.insert(crcData.end(), payload.begin(), payload.end());
         // std::vector<uint8_t> crc_bytes = Helpers::calculateCRC32Bytes(crcData); //Byte 10-13
+         std::vector<uint8_t> crc_bytes = Helpers::calculateCRC32Bytes(payload); //Byte 10-13
 
         // --- Assemble final message ---
         std::vector<uint8_t> result;

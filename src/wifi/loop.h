@@ -46,6 +46,8 @@ Task WiFiLoop("WiFiLoop", 0, 1000, "loop", []() {
         if(wifiState.ap) return;
         Serial.println("[WiFi] Oh no! All pairings failed! Entering AP mode...");
         WiFi.disconnect(true);
+        WiFi.mode(WIFI_OFF);
+        delay(100);
         WiFi.mode(WIFI_AP);
         
         const char* apSSID = "iPixel-ESP32";
@@ -65,6 +67,12 @@ Task WiFiLoop("WiFiLoop", 0, 1000, "loop", []() {
         wifiState.startAttempt = millis();
         nextCred->_failed = false;
         Serial.printf("[WiFi] Attempting connection to %s\n", nextCred->ssid.c_str());
+        
+        if(wifiState.ap) {
+            WiFi.softAPdisconnect(true);
+            wifiState.ap = false;
+        }
+        
         WiFi.disconnect(true);
         WiFi.mode(WIFI_STA);
         WiFi.begin(nextCred->ssid.c_str(), nextCred->password.c_str());

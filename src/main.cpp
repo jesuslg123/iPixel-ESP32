@@ -7,9 +7,12 @@
 void setup() {
   delay(2000);
   Serial.begin(115200);
+  Serial.setDebugOutput(true);
   Serial.println("[Setup] Hello World! Let's hope we can pixel together!");
   Serial.println("[Setup] We are jumping into our task runner! *JUMPS*");
-  LittleFS.begin();
+  if (!LittleFS.begin(true)) {
+    Serial.println("[Setup] LittleFS mount failed (formatted?)");
+  }
   Task::runAllOf("setup");
 }
 

@@ -391,17 +391,7 @@ namespace iPixelCommands {
         }
         payload.insert(payload.end(), chars_bytes.begin(), chars_bytes.end());
 
-        // --- CRC ---
-        // TEMPORARY HARDCODED: Use official CRC from sniff
-        // std::vector<uint8_t> crc_bytes = { 0xCA, 0xD8, 0x70, 0xF9 }; //Byte 10-13
-        
-        // CRC must be calculated over text header + character data (everything after protocol header and CRC itself)
-        // Build complete CRC input: save_slot_bytes (text count) + payload (rest of text header + character data)
-        // std::vector<uint8_t> crcData;
-        // crcData.insert(crcData.end(), save_slot_bytes.begin(), save_slot_bytes.end());
-        // crcData.insert(crcData.end(), payload.begin(), payload.end());
-        // std::vector<uint8_t> crc_bytes = Helpers::calculateCRC32Bytes(crcData); //Byte 10-13
-         std::vector<uint8_t> crc_bytes = Helpers::calculateCRC32Bytes(payload); //Byte 10-13
+        std::vector<uint8_t> crc_bytes = Helpers::calculateCRC32Bytes(payload); //Byte 10-13
 
         // --- Assemble final message ---
         std::vector<uint8_t> result;

@@ -357,9 +357,12 @@ namespace iPixelCommands {
         header.push_back(0x00); //Byte 9
 
         // --- Save slot ---
-        // HARDCODED: Match official sniff bytes after CRC: 00 17 followed by character count
-        // std::vector<uint8_t> save_slot_bytes = { 0x00, 0x17, (uint8_t)(text.length()) };
-        std::vector<uint8_t> save_slot_bytes = { 0x00, 0x17 };
+        uint16_t save_slot_val = (uint16_t)(save_slot);
+        std::vector<uint8_t> save_slot_bytes = {
+            (uint8_t)(save_slot_val & 0xFF),
+            (uint8_t)((save_slot_val >> 8) & 0xFF)
+        };
+        save_slot_bytes = save_slot_bytes; //Byte 14-15
 
         // --- Payload ---
         std::vector<uint8_t> payload;

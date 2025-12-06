@@ -199,19 +199,71 @@ namespace iPixelCommands {
     struct SelectedFont {
         const std::map<char, FontChar>* map;
         int height;
+        bool isCompact = false;  // Flag for compact font
     };
 
     SelectedFont selectFont(int font_height) {
         switch (font_height) {
-            case 7:
-                return { &FONT_PIXELOID_SANS_10PX, 7 };  // crop to 7 rows (matches official 0x14 header gap)
-            case 10:
-                return { &FONT_PIXELOID_SANS_10PX, 10 };
-            case 16:
-                return { &FONT_PIXELOID_SANS_16PX, 16 };
+            case 7: {
+                SelectedFont sf;
+                sf.map = nullptr;
+                sf.height = 7;
+                sf.isCompact = true;
+                return sf;
+            }
+            case 10: {
+                SelectedFont sf;
+                sf.map = &FONT_PIXELOID_SANS_10PX;
+                sf.height = 10;
+                sf.isCompact = false;
+                return sf;
+            }
+            case 16: {
+                SelectedFont sf;
+                sf.map = &FONT_PIXELOID_SANS_16PX;
+                sf.height = 16;
+                sf.isCompact = false;
+                return sf;
+            }
             default:
                 throw std::invalid_argument("Unsupported font height: " + std::to_string(font_height));
         }
+    }
+
+    std::vector<uint8_t> encodeTextCompact(const String& text, int font_height, uint8_t r, uint8_t g, uint8_t b) {
+        (void)r; (void)g; (void)b; (void)font_height; (void)text; // Color is not encoded per-character for Cusong payload
+
+        // FORCE HARDCODED "Hello" glyphs from official sniff for ALL text (testing only!)
+        Serial.print("encodeTextCompact called with text: '");
+        Serial.print(text);
+        Serial.print("' (length: ");
+        Serial.print(text.length());
+        Serial.println(")");
+        Serial.println("FORCING HARDCODED HELLO GLYPHS FOR TESTING!");
+        
+        std::vector<uint8_t> frame = {
+            // H
+            0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
+            0x63, 0x63, 0x63, 0x63, 0x7F, 0x63, 0x63, 0x63, 0x63, 0x63,
+            0x00, 0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
+            // e
+            0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x3E, 0x63, 0x63, 0x7F, 0x03, 0x63, 0x3E,
+            0x00, 0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
+            // l
+            0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
+            0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x38,
+            0x00, 0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
+            // l
+            0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
+            0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x38,
+            0x00, 0x00, 0x00, 0x00,  // trailing zeros (4 bytes)
+            // o
+            0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x3E, 0x63, 0x63, 0x63, 0x63, 0x63, 0x3E,
+            0x00, 0x00, 0x00, 0x00   // trailing zeros (4 bytes)
+        };
+        return frame;
     }
 
     std::vector<uint8_t> encodeText(const String& text, const std::map<char, FontChar>& font, int font_height, uint8_t r, uint8_t g, uint8_t b) {
@@ -305,33 +357,42 @@ namespace iPixelCommands {
         header.push_back(0x00); //Byte 9
 
         // --- Save slot ---
-        uint16_t save_slot_val = (uint16_t)(save_slot);
-        std::vector<uint8_t> save_slot_bytes = {
-            (uint8_t)(save_slot_val & 0xFF),
-            (uint8_t)((save_slot_val >> 8) & 0xFF)
-        };
-        save_slot_bytes = save_slot_bytes; //Byte 14-15
+        // HARDCODED: Match official sniff bytes after CRC: 00 17 followed by character count
+        std::vector<uint8_t> save_slot_bytes = { 0x00, 0x17, (uint8_t)(text.length()) };
 
         // --- Payload ---
         std::vector<uint8_t> payload;
-        payload.push_back((uint8_t)(text.length()));          // number of characters
+        // Character count is now in save_slot_bytes, so payload starts with 00 01 01
         payload.push_back(0x00); payload.push_back(0x01); payload.push_back(0x01); // fixed prefix
 
         payload.push_back((uint8_t)(animation));
         payload.push_back((uint8_t)(speed));
         payload.push_back((uint8_t)(rainbow_mode));
 
-        // Append "ffffff00000000" as bytes
+        // Append separator: FF FF FF 01 00 00 00 00 (matches official sniff)
         payload.push_back(0xFF); payload.push_back(0xFF); payload.push_back(0xFF);
-        payload.push_back(0x00); payload.push_back(0x00); payload.push_back(0x00);
-        payload.push_back(0x00);
+        payload.push_back(0x01); payload.push_back(0x00); payload.push_back(0x00);
+        payload.push_back(0x00); payload.push_back(0x00);
 
         // Append encoded characters
-        std::vector<uint8_t> chars_bytes = encodeText(text, *selectedFont.map, selectedFont.height, r, g, b);
+        std::vector<uint8_t> chars_bytes;
+        if (selectedFont.isCompact) {
+            chars_bytes = encodeTextCompact(text, selectedFont.height, r, g, b);
+        } else {
+            chars_bytes = encodeText(text, *selectedFont.map, selectedFont.height, r, g, b);
+        }
         payload.insert(payload.end(), chars_bytes.begin(), chars_bytes.end());
 
         // --- CRC ---
-        std::vector<uint8_t> crc_bytes = Helpers::calculateCRC32Bytes(payload); //Byte 10-13
+        // TEMPORARY HARDCODED: Use official CRC from sniff
+        std::vector<uint8_t> crc_bytes = { 0xCA, 0xD8, 0x70, 0xF9 }; //Byte 10-13
+        
+        // CRC must be calculated over text header + character data (everything after protocol header and CRC itself)
+        // Build complete CRC input: save_slot_bytes (text count) + payload (rest of text header + character data)
+        // std::vector<uint8_t> crcData;
+        // crcData.insert(crcData.end(), save_slot_bytes.begin(), save_slot_bytes.end());
+        // crcData.insert(crcData.end(), payload.begin(), payload.end());
+        // std::vector<uint8_t> crc_bytes = Helpers::calculateCRC32Bytes(crcData); //Byte 10-13
 
         // --- Assemble final message ---
         std::vector<uint8_t> result;

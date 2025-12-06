@@ -14,6 +14,8 @@ struct FontChar {
 // Generated font variants (Pixeloid Sans)
 #include "Font_PIXELOID_SANS_10PX.h"
 #include "Font_PIXELOID_SANS_16PX.h"
+// #include "Font_CUSONG_7PX.h"  // Old version - disabled
+#include "Font_CUSONG_7PX_COMPACT.h"
 
 const std::map<char, FontChar> FONT_VCR_OSD_MONO_16PX = {
     {' ', {9, { // ASCII 32

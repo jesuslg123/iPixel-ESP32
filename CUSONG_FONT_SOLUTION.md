@@ -26,7 +26,7 @@ std::vector<uint8_t> encodeTextCompact(const String& text, int font_height, uint
 
         uint8_t char_width = pgm_read_byte(&fontChar->width);
         
-        // Character header: 00 FF FF FF 00 00 00
+        // Character header: keep the 7 sniffed bytes (often 00 FF FF FF 00 00 00)
         frame.push_back(0x00);
         frame.push_back(0xFF);
         frame.push_back(0xFF);
@@ -67,11 +67,13 @@ A new Python script that generates font files from **verified Bluetooth sniff da
 
 ### 3. Protocol Format
 
-Each character in the compact 7px Cusong font follows this format:
+Each character in the compact 7px Cusong font follows this format (the 7-byte header is per-glyph; keep it exactly as sniffed):
 
 ```
 ┌─────────────────────────────────────────────┐
-│ Header: 00 FF FF FF 00 00 00 (7 bytes)    │
+│ Header: H0 H1 H2 H3 H4 H5 H6 (7 bytes)    │
+│         common but not guaranteed:        │
+│         00 FF FF FF 00 00 00              │
 ├─────────────────────────────────────────────┤
 │ Glyph Data: 10 bytes (one per row)        │
 │   - Each byte = horizontal row of pixels   │
@@ -85,7 +87,7 @@ Total: 20 bytes per character
 
 **Example - Letter 'H':**
 ```
-Header:  00 FF FF FF 00 00 00
+Header:  00 FF FF FF 00 00 00 (canonical in current sniffs; other glyphs may differ)
 Glyph:   63 63 63 63 7F 63 63 63 63 63
          │  │  │  │  │  │  │  │  │  │
          │  │  │  │  │  │  │  │  │  └─ Row 9:  ·██···██
@@ -104,10 +106,10 @@ Trailer: 00 00 00
 ## How to Add More Characters
 
 1. **Capture a Bluetooth sniff** of the character you want to add
-2. **Extract the glyph bytes** (10 bytes after the `00 FF FF FF 00 00 00` header)
+2. **Extract the 7-byte header and glyph bytes** (the full 7-byte header + 10 glyph bytes that follow it)
 3. **Edit `scripts/build_cusong_from_sniff.py`** and add to `VERIFIED_GLYPHS`:
    ```python
-   'A': (width, [0xByte0, 0xByte1, 0xByte2, ..., 0xByte9]),
+    'A': (width, [0xH0, 0xH1, 0xH2, 0xH3, 0xH4, 0xH5, 0xH6, 0xRow0, 0xRow1, ..., 0xRow9]),
    ```
 4. **Run the script:**
    ```bash

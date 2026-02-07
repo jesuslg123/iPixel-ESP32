@@ -99,7 +99,8 @@ namespace Helpers {
     }
 
     std::vector<uint8_t> encodeRGBAPixelsToPng(std::vector<uint8_t> framebuffer, uint8_t width, uint8_t height) {
-        PNGENC png;
+        // Allocate PNGENC on heap to avoid stack overflow (object has large internal buffers)
+        PNGENC* png = new PNGENC();
         
         // Calculate required buffer size (conservative estimate: 1.5x raw data)
         // For 64x20 RGBA: 5,120 bytes raw -> ~7,680 bytes buffer (typical PNG: 2-4 KB)
@@ -108,18 +109,20 @@ namespace Helpers {
         std::vector<uint8_t> pngData(maxBufferSize);
         
         // Initialize encoder to RAM buffer
-        int rc = png.open(pngData.data(), pngData.size());
+        int rc = png->open(pngData.data(), pngData.size());
         if (rc != PNG_SUCCESS) {
             Serial.println("PNG encoder initialization failed!");
             Serial.printf("Error code: %d\n", rc);
+            delete png;
             return {};
         }
         
         // Start encoding: RGBA (32-bit), 8-bit per channel, compression level 9
-        rc = png.encodeBegin(width, height, PNG_PIXEL_TRUECOLOR_ALPHA, 8, NULL, 9);
+        rc = png->encodeBegin(width, height, PNG_PIXEL_TRUECOLOR_ALPHA, 8, NULL, 9);
         if (rc != PNG_SUCCESS) {
             Serial.println("PNG encoding start failed!");
             Serial.printf("Error code: %d\n", rc);
+            delete png;
             return {};
         }
         
@@ -127,15 +130,18 @@ namespace Helpers {
         size_t bytesPerLine = width * 4; // RGBA = 4 bytes per pixel
         for (int y = 0; y < height; y++) {
             uint8_t* lineStart = framebuffer.data() + (y * bytesPerLine);
-            rc = png.addLine(lineStart);
+            rc = png->addLine(lineStart);
             if (rc != PNG_SUCCESS) {
                 Serial.printf("PNG encoding failed at line %d, error: %d\n", y, rc);
+                delete png;
                 return {};
             }
         }
         
         // Finalize encoding and get actual PNG size
-        int finalSize = png.close();
+        int finalSize = png->close();
+        delete png;  // Free heap allocation
+        
         if (finalSize <= 0) {
             Serial.println("PNG finalization failed!");
             return {};

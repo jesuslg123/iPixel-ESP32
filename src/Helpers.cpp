@@ -102,10 +102,10 @@ namespace Helpers {
         // Allocate PNGENC on heap to avoid stack overflow (object has large internal buffers)
         PNGENC* png = new PNGENC();
         
-        // Calculate required buffer size (conservative: 3x raw data to handle worst-case compression)
-        // For 64x20 RGBA: 5,120 bytes raw -> 15,360 bytes buffer (typical PNG: 2-4 KB)
+        // Calculate required buffer size (2x raw data - balance between safety and memory)
+        // For 64x20 RGBA: 5,120 bytes raw -> 10,240 bytes buffer (typical PNG: 2-4 KB)
         size_t rawSize = width * height * 4;
-        size_t maxBufferSize = rawSize * 3;  // Increased from 1.5x to 3x for safety
+        size_t maxBufferSize = rawSize * 2;  // 2x provides enough headroom without excessive memory
         std::vector<uint8_t> pngData(maxBufferSize);
         
         Serial.printf("[PNG] Encoding %dx%d RGBA (%zu bytes raw, %zu buffer)\n", 

@@ -99,21 +99,50 @@ namespace Helpers {
     }
 
     std::vector<uint8_t> encodeRGBAPixelsToPng(std::vector<uint8_t> framebuffer, uint8_t width, uint8_t height) {
-        //Force lodepng to use 8-bit per channel RGBA (device does not support palleted colors!)
-        lodepng::State state;
-        state.info_raw.bitdepth = 8;
-        state.info_raw.colortype = LCT_RGBA;
-        state.info_png.color.bitdepth = 8;
-        state.info_png.color.colortype = LCT_RGBA;
-        state.encoder.auto_convert = 0;
-
-        std::vector<uint8_t> pngData;
-        unsigned error = lodepng::encode(pngData, framebuffer, width, height, state);
-        if(error) {
-            Serial.println("Failure encoding RGBA framebuffer to pixels!");
-            Serial.println(lodepng_error_text(error));
+        PNGENC png;
+        
+        // Calculate required buffer size (conservative estimate: 1.5x raw data)
+        // For 64x20 RGBA: 5,120 bytes raw -> ~7,680 bytes buffer (typical PNG: 2-4 KB)
+        size_t rawSize = width * height * 4;
+        size_t maxBufferSize = (rawSize * 3) / 2;
+        std::vector<uint8_t> pngData(maxBufferSize);
+        
+        // Initialize encoder to RAM buffer
+        int rc = png.open(pngData.data(), pngData.size());
+        if (rc != PNG_SUCCESS) {
+            Serial.println("PNG encoder initialization failed!");
+            Serial.printf("Error code: %d\n", rc);
             return {};
         }
+        
+        // Start encoding: RGBA (32-bit), 8-bit per channel, compression level 9
+        rc = png.encodeBegin(width, height, PNG_PIXEL_TRUECOLOR_ALPHA, 8, NULL, 9);
+        if (rc != PNG_SUCCESS) {
+            Serial.println("PNG encoding start failed!");
+            Serial.printf("Error code: %d\n", rc);
+            return {};
+        }
+        
+        // Encode line by line (PNGenc requirement)
+        size_t bytesPerLine = width * 4; // RGBA = 4 bytes per pixel
+        for (int y = 0; y < height; y++) {
+            uint8_t* lineStart = framebuffer.data() + (y * bytesPerLine);
+            rc = png.addLine(lineStart);
+            if (rc != PNG_SUCCESS) {
+                Serial.printf("PNG encoding failed at line %d, error: %d\n", y, rc);
+                return {};
+            }
+        }
+        
+        // Finalize encoding and get actual PNG size
+        int finalSize = png.close();
+        if (finalSize <= 0) {
+            Serial.println("PNG finalization failed!");
+            return {};
+        }
+        
+        // Resize vector to actual PNG data size
+        pngData.resize(finalSize);
         return pngData;
     }
 

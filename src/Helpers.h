@@ -4,7 +4,7 @@
 #include <vector>
 #include <stdexcept>
 #include <ErriezCRC32.h>
-#include "lodepng.h"
+#include <PNGenc.h>
 
 namespace Helpers {
 

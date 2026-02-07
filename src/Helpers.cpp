@@ -102,26 +102,28 @@ namespace Helpers {
         // Allocate PNGENC on heap to avoid stack overflow (object has large internal buffers)
         PNGENC* png = new PNGENC();
         
-        // Calculate required buffer size (conservative estimate: 1.5x raw data)
-        // For 64x20 RGBA: 5,120 bytes raw -> ~7,680 bytes buffer (typical PNG: 2-4 KB)
+        // Calculate required buffer size (conservative: 3x raw data to handle worst-case compression)
+        // For 64x20 RGBA: 5,120 bytes raw -> 15,360 bytes buffer (typical PNG: 2-4 KB)
         size_t rawSize = width * height * 4;
-        size_t maxBufferSize = (rawSize * 3) / 2;
+        size_t maxBufferSize = rawSize * 3;  // Increased from 1.5x to 3x for safety
         std::vector<uint8_t> pngData(maxBufferSize);
+        
+        Serial.printf("[PNG] Encoding %dx%d RGBA (%zu bytes raw, %zu buffer)\n", 
+                     width, height, rawSize, maxBufferSize);
         
         // Initialize encoder to RAM buffer
         int rc = png->open(pngData.data(), pngData.size());
         if (rc != PNG_SUCCESS) {
-            Serial.println("PNG encoder initialization failed!");
-            Serial.printf("Error code: %d\n", rc);
+            Serial.printf("[PNG] ERROR: Encoder init failed, code: %d\n", rc);
             delete png;
             return {};
         }
         
-        // Start encoding: RGBA (32-bit), 8-bit per channel, compression level 9
-        rc = png->encodeBegin(width, height, PNG_PIXEL_TRUECOLOR_ALPHA, 8, NULL, 9);
+        // Start encoding: RGBA (32-bit), 8-bit per channel, compression level 6 (balanced)
+        // Reduced from level 9 to avoid excessive compression overhead
+        rc = png->encodeBegin(width, height, PNG_PIXEL_TRUECOLOR_ALPHA, 8, NULL, 6);
         if (rc != PNG_SUCCESS) {
-            Serial.println("PNG encoding start failed!");
-            Serial.printf("Error code: %d\n", rc);
+            Serial.printf("[PNG] ERROR: Encode begin failed, code: %d\n", rc);
             delete png;
             return {};
         }
@@ -132,7 +134,7 @@ namespace Helpers {
             uint8_t* lineStart = framebuffer.data() + (y * bytesPerLine);
             rc = png->addLine(lineStart);
             if (rc != PNG_SUCCESS) {
-                Serial.printf("PNG encoding failed at line %d, error: %d\n", y, rc);
+                Serial.printf("[PNG] ERROR: Line %d failed, code: %d\n", y, rc);
                 delete png;
                 return {};
             }
@@ -143,9 +145,12 @@ namespace Helpers {
         delete png;  // Free heap allocation
         
         if (finalSize <= 0) {
-            Serial.println("PNG finalization failed!");
+            Serial.printf("[PNG] ERROR: Finalize failed, size: %d\n", finalSize);
             return {};
         }
+        
+        Serial.printf("[PNG] Success! Encoded %d bytes (%.1f%% of raw)\n", 
+                     finalSize, (finalSize * 100.0) / rawSize);
         
         // Resize vector to actual PNG data size
         pngData.resize(finalSize);

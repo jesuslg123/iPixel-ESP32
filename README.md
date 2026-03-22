@@ -129,6 +129,33 @@ Available environments in `platformio.ini`:
 - `esp32s3dev` (default)
 - `esp32dev`
 - `esp32c3dev`
+- `esp32s3_ble_only_example` (library-only sample, no webserver/WiFi/control modules)
+
+BLE-only example build:
+
+```bash
+# Build the BLE-only example
+pio run -e esp32s3_ble_only_example
+
+# Upload BLE-only example
+pio run -e esp32s3_ble_only_example -t upload
+```
+
+BLE-only example entrypoint:
+
+- `src/examples/ble_only_main.cpp`
+
+## Memory Usage Comparison
+
+The library-first BLE-only approach provides significant memory savings:
+
+| Build Profile | RAM | Flash |
+|---|---|---|
+| **BLE-only library** | 9.1% (29.8 KB) | 30.2% (633.6 KB) |
+| **Full firmware** (webserver + WiFi + control) | 15.5% (50.8 KB) | 55.8% (1.2 MB) |
+| **Savings** | ~6.4 KB | ~535.5 KB |
+
+For resource-constrained deployments or third-party integrations, the BLE-only library (`esp32s3_ble_only_example` environment) reduces flash usage by ~53% and RAM by ~40%, freeing space for application logic.
 
 ## Key Documentation
 

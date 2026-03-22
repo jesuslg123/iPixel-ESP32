@@ -1,188 +1,320 @@
 # iPixel-ESP32
 
-A pure BLE library for controlling iPixel LED matrix displays. Integrate this C++ library into your own ESP32 or third-party application to communicate with iPixel devices via Bluetooth.
+A C++ BLE library for controlling iPixel LED matrix displays from an ESP32.
+Add it to any PlatformIO project via `lib_deps` and control any iPixel display directly over Bluetooth — no HTTP server, no WiFi stack.
 
-## What This Is
+---
 
-- **BLE Command Library:** Core BLE command generation and transmission to iPixel displays
-- **Multi-Font Support:** Pre-generated font data (Cusong 7px, PixeloidSans 10px/16px)
-- **Minimal Dependencies:** Only NimBLE-Arduino and ErriezCRC32—no HTTP server or WiFi overhead
-- **Memory Efficient:** Library-only builds consume ~30% flash and ~9% RAM vs full firmware
+## Installation
 
-## Quick Start
+Add the library to your `platformio.ini` using the GitHub repository and branch:
 
-### 1. Include the Client API
-
-```cpp
-#include "iPixelBleClient.h"
-
-// Create a client instance
-iPixelBleClient::Client client;
-
-// In setup()
-client.connect(BLEAddress("AA:BB:CC:DD:EE:FF"));
-
-// In loop()
-client.loop();
-
-// Send commands
-client.setBrightness(200);
-client.sendText("Hello", Font::CUSONG_7PX_COMPACT);
+```ini
+lib_deps =
+  https://github.com/ToBiDi0410/iPixel-ESP32.git#develop
 ```
 
-### 2. PlatformIO Configuration
+PlatformIO will automatically download the library and its bundled dependencies (`lodepng`). You also need to declare the external library deps the library relies on:
 
-Add to `platformio.ini`:
+```ini
+lib_deps =
+  https://github.com/ToBiDi0410/iPixel-ESP32.git#develop
+  h2zero/NimBLE-Arduino@^2.1.0
+  erriez/ErriezCRC32@^1.0.1
+  adafruit/Adafruit GFX Library@^1.12.3
+```
+
+### Complete `platformio.ini` example
 
 ```ini
 [env:my_app]
 platform = espressif32@6.12.0
 framework = arduino
-board = esp32-s3-devkitc-1
+board = esp32-s3-devkitc-1    ; adjust to your board
+
+board_build.flash_mode = qio
+board_build.psram_type = qio  ; remove this line if your board has no PSRAM
+
+build_flags =
+  -std=c++14
 
 lib_deps =
+  https://github.com/ToBiDi0410/iPixel-ESP32.git#develop
   h2zero/NimBLE-Arduino@^2.1.0
   erriez/ErriezCRC32@^1.0.1
-
-; Adjust for your board
-board_build.flash_mode = qio
-board_build.psram_type = qio
+  adafruit/Adafruit GFX Library@^1.12.3
 ```
 
-Copy `src/` (excluding `examples/`) into your project.
+> **Find your iPixel MAC address** using a BLE scanner app such as [nRF Connect](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-mobile).
 
-## Architecture
+---
 
-**Core BLE Stack:**
-- `iPixelDevice.h/cpp` — Low-level BLE connection and command queuing
-- `iPixelCommands.h` — Command frame generation and encoding
-- `iPixelBleClient.h/cpp` — High-level C++ API facade for third-party integration
-
-**Supporting Files:**
-- `Helpers.h/cpp` — CRC32 and utility functions
-- `Tasking.h` — Optional task scheduler (used in example firmware)
-- `include/Font_*.h` — Pre-rendered font data
-
-## Device APIs
-
-### `iPixelBleClient::Client`
-
-Connect to and control a single iPixel device:
+## Quick Start
 
 ```cpp
-class Client {
-  bool connect(BLEAddress deviceAddr);
-  void disconnect();
-  void loop();  // Call frequently in your main loop
-  
-  void setBrightness(int brightness);
-  void setSpeed(int speed);
-  void sendText(String text, Font font);
-  void sendPNG(const uint8_t* pngData, size_t length);
-  void sendGIF(const uint8_t* gifData, size_t length);
-  void setPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b);
-  void clear();
-  // ... and more control methods
-};
+#include "iPixelBleClient.h"
+
+// Replace with your iPixel device MAC address
+iPixelBLE::Client matrix("AA:BB:CC:DD:EE:FF");
+
+void setup() {
+  Serial.begin(115200);
+
+  // Initialize the BLE stack once. Set your device's advertised BLE name.
+  iPixelBLE::Client::init("MyApp");
+
+  // Reconnect automatically when the device drops (default: true)
+  matrix.setAutoReconnect(true);
+
+  // Start non-blocking connection attempt
+  matrix.connect();
+}
+
+void loop() {
+  // REQUIRED: call every loop iteration.
+  // Handles reconnection and flushes the outbound command queue.
+  matrix.loop();
+
+  if (matrix.isConnected()) {
+    matrix.setBrightness(80);
+    matrix.sendText("Hello!", 0, 1, 50, 255, 255, 255, 0, 16, 16);
+  }
+
+  delay(1);
+}
 ```
 
-### Low-Level APIs
+See [src/examples/ble_only_main.cpp](src/examples/ble_only_main.cpp) for a complete working example.
 
-For advanced use, access `iPixelDevice` directly:
+---
+
+## API Reference
+
+### Static initialization
 
 ```cpp
-iPixelDevice device(BLEAddress("AA:BB:CC:DD:EE:FF"));
-device.connect();
-device.onConnected([](iPixelDevice* d) { /* handle */ });
-device.enqueueCommand(CommandType::SET_BRIGHTNESS, 200);
+// Call once before connecting any Client. Sets the BLE device name.
+iPixelBLE::Client::init("MyApp");
 ```
 
-## Build Targets
+This must be called exactly once per firmware. Calling it multiple times is safe (it is a no-op after the first call).
 
-### Default Firmware
+---
 
-```bash
-platformio run -e esp32s3dev    # Full firmware with task runner
+### `Client` — constructor
+
+```cpp
+iPixelBLE::Client matrix("AA:BB:CC:DD:EE:FF");   // MAC address as string
+iPixelBLE::Client matrix(NimBLEAddress addr);     // NimBLE address object
 ```
 
-### Library-Only Example
+---
 
-```bash
-platformio run -e esp32s3_ble_only_example  # Minimal BLE client example
+### Connection
+
+| Method | Description |
+|---|---|
+| `connect()` | Start async connection attempt |
+| `disconnect()` | Disconnect immediately |
+| `setAutoReconnect(bool)` | Auto-reconnect on drop. Default: `true` |
+| `isConnected()` | Returns `bool` |
+| `mac()` | Returns MAC address as `String` |
+| `queuedCommands()` | Returns count of pending commands in the queue |
+| `loop()` | **Must be called every `loop()` iteration** |
+
+---
+
+### Display commands
+
+All commands are **non-blocking** — they are queued and transmitted asynchronously. Call `matrix.loop()` every iteration to drain the queue.
+
+---
+
+#### `setBrightness(int brightness)`
+```cpp
+matrix.setBrightness(80);  // 0–100
 ```
 
-### Hardware Variants
+---
 
-- `esp32dev`, `esp32c3dev` — Standard ESP32 variants
-- `esp32s3dev` — ESP32-S3 with PSRAM (default)
-- `esp32s3supermini` — ESP32-S3 mini without PSRAM
-## Repository Structure
+#### `setSpeed(int speed)`
+Animation and scroll speed.
+```cpp
+matrix.setSpeed(50);  // 0–100
+```
 
-- `src/Helpers.h/cpp` — Utility functions (CRC32, bit transforms, parsing)
-- `src/Tasking.h` — Optional task scheduler for background execution
-- `src/iPixelDevice.h/cpp` — Low-level BLE connection management
-- `src/iPixelCommands.h` — Command frame builders and encoding
-- `src/iPixelBleClient.h/cpp` — High-level C++ API facade
-- `src/bluetooth/` — BLE connection state and loop management
-- `src/examples/ble_only_main.cpp` — Minimal example firmware
-- `include/Font_*.h` — Pre-rendered font data for text rendering
-- `scripts/` — Font conversion and asset generation tools
-- `test/` — Native unit test scaffolding
+---
 
-## Memory Usage
+#### `clear()`
+Clear all content from the display.
+```cpp
+matrix.clear();
+```
 
-Library-only builds are significantly more memory-efficient:
+---
 
-| Configuration | RAM | Flash |
+#### `setLED(bool on)`
+Turn the LED panel on or off.
+```cpp
+matrix.setLED(true);
+```
+
+---
+
+#### `setOrientation(int orientation)`
+```cpp
+matrix.setOrientation(0);  // 0 = normal, 1 = 180°
+```
+
+---
+
+#### `setTime(int hour, int minute, int second)`
+Sync the device clock.
+```cpp
+matrix.setTime(14, 30, 0);
+```
+
+---
+
+#### `setFunMode(bool value)`
+Toggle built-in fun mode animations.
+```cpp
+matrix.setFunMode(true);
+```
+
+---
+
+#### `deleteScreen(int screen)`
+Delete a saved screen from the device's storage.
+```cpp
+matrix.deleteScreen(1);  // slot 1-n
+```
+
+---
+
+#### `setPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b)`
+Set a single pixel. Origin `(0, 0)` is top-left.
+```cpp
+matrix.setPixel(0, 0, 255, 0, 0);  // red pixel at [0,0]
+```
+
+---
+
+#### `sendText(text, animation, saveSlot, speed, r, g, b, rainbow, matrixHeight, fontHeight)`
+
+Display scrolling or static text.
+
+```cpp
+matrix.sendText(
+  "Hello",  // text
+  0,        // animation style (0 = scroll left)
+  1,        // save slot on device (1–n)
+  50,       // scroll speed (0–100)
+  255,      // red
+  255,      // green
+  255,      // blue
+  0,        // rainbow mode: 0 = off, 1 = on
+  16,       // matrix height in pixels (usually 16)
+  16        // font height (see table below)
+);
+```
+
+**Font height values:**
+
+| `fontHeight` | Font |
+|---|---|
+| `7` | Cusong 7px Compact — fits small text on 16px tall displays |
+| `10` | Pixeloid Sans 10px |
+| `16` | Pixeloid Sans 16px (default, fills the full height) |
+
+---
+
+#### `sendPNG(const std::vector<uint8_t>& pngData)`
+
+Send a PNG image to the display.
+
+```cpp
+#include <vector>
+
+// Example: image embedded as a C array
+extern const uint8_t my_image[] = { /* raw PNG bytes */ };
+const size_t my_image_size = sizeof(my_image);
+
+matrix.sendPNG(std::vector<uint8_t>(my_image, my_image + my_image_size));
+```
+
+---
+
+#### `sendGIF(const std::vector<uint8_t>& gifData)`
+
+Send a GIF animation. Same usage as `sendPNG`.
+
+---
+
+#### `setClockMode(style, dayOfWeek, year, month, day, showDate, format24)`
+
+Display a clock face.
+
+```cpp
+matrix.setClockMode(
+  0,     // clock face style (0–n)
+  1,     // day of week: 0 = Sunday … 6 = Saturday
+  2026,  // year
+  3,     // month (1–12)
+  22,    // day (1–31)
+  true,  // show date below time
+  true   // 24h format; false = 12h AM/PM
+);
+```
+
+---
+
+#### `setRhythmLevelMode(int style, const int levels[11])`
+
+Display an equalizer-style bar animation with 11 frequency bands.
+
+```cpp
+int levels[11] = {10, 20, 40, 60, 80, 100, 80, 60, 40, 20, 10};
+matrix.setRhythmLevelMode(0, levels);  // style 0–n
+```
+
+---
+
+#### `setRhythmAnimationMode(int style, int frameNumber)`
+
+Step through a rhythm animation manually.
+
+```cpp
+matrix.setRhythmAnimationMode(0, 3);  // style 0–n, frame index
+```
+
+---
+
+#### `queueRaw(const std::vector<uint8_t>& command)`
+
+Queue a pre-built raw BLE command frame. For advanced use when protocol-level control is needed.
+
+```cpp
+matrix.queueRaw({0x01, 0x02, 0x03, /* ... */});
+```
+
+See [iPixel_PROTOCOL.md](iPixel_PROTOCOL.md) for frame structure details.
+
+---
+
+## Memory Footprint
+
+Measured on ESP32-S3 with a clean library-only build:
+
+| | RAM | Flash |
 |---|---|---|
-| BLE-only library | 9.1% (29.8 KB) | 30.2% (633.6 KB) |
-| Full example | 15.5% (50.8 KB) | 55.8% (1.2 MB) |
+| Used | 19 KB (5.8%) | 404 KB (19.3%) |
 
-The library-only approach saves ~53% flash and ~40% RAM for embedded deployments.
+---
 
-## Building
+## Credits
 
-### Prerequisites
-
-- PlatformIO CLI or VS Code extension
-
-### Default Build
-
-```bash
-platformio run -e esp32s3dev
-```
-
-### Library-Only Example
-
-```bash
-platformio run -e esp32s3_ble_only_example
-```
-
-### Upload
-
-```bash
-platformio run -e esp32s3dev -t upload
-platformio device monitor -b 115200
-```
-
-## Available Hardware Targets
-
-- `esp32dev` — Generic ESP32
-- `esp32c3dev` — ESP32-C3
-- `esp32s3dev` — ESP32-S3 with PSRAM (default, 4MB flash)
-- `esp32s3supermini` — ESP32-S3 mini without PSRAM
-- `esp32s3_ble_only_example` — BLE library demonstration
-
-## Protocol & Documentation
-
-- [iPixel_PROTOCOL.md](iPixel_PROTOCOL.md) — BLE frame structure and command format
-- [FONT_CONVERSION_SUMMARY.md](FONT_CONVERSION_SUMMARY.md) — Font generation and bundling
-- [IMPLEMENTATION_INDEX.md](IMPLEMENTATION_INDEX.md) — Implementation notes
-- [GFX.md](GFX.md) — Graphics pipeline details
-
-## Community & Credits
-
-Protocol reverse-engineering builds on community research:
+Protocol reverse-engineered from community work:
 
 - https://github.com/lucagoc/iPixel-CLI
 - https://github.com/DonKracho/ESPHome-external-component-for-iPixel-ble-devices

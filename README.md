@@ -1,76 +1,146 @@
-# ESP32-iPixel
+# iPixel-ESP32
 
-**ESP32-iPixel** is a project to control **iPixel color matrices** using an ESP32 microcontroller.  
-It exposes the device’s functionality via a **REST API** served by a built-in web server.
+ESP32 firmware that exposes a REST API to control iPixel BLE LED matrices.
 
----
+The project combines:
 
-> [!CAUTION]  
-> This docuementation is outdated as a rewrite of the webserver is going on!  
-> Please use this work-tree for testing: https://github.com/ToBiDi0410/iPixel-ESP32/tree/0602925e64fb0f41a694e3bdc56e55c945941ec6
+- BLE command generation and queued transmission to iPixel displays
+- On-device HTTP API (ESPAsyncWebServer)
+- Persistent pairing registries (LittleFS JSON) for Bluetooth devices and WiFi credentials
+- Multi-font text rendering pipeline (including compact 7px and 10px/16px variants)
 
-# ⚠️⚠️⚠️ UNSTABLE
-This is currently only work-in-progress with the only supported device beeing the ESP32-S3 (SuperMicro).  
-Support for further ESP32 boards is planned.  
+## Current Status
 
----
+- Development branch is active and API is still evolving.
+- `esp32-s3-devkitc-1` is the primary target (`platformio.ini` default environment).
+- Other ESP32 environments are configured but should be treated as secondary.
 
-## 📡 Endpoints
-All endpoints are **device-specific**, identified by `:mac` (the device's MAC address).  
-You have to determine this BLE-address on your own (e.g. using Android Apps).  
+## Runtime Architecture
 
-> ⚠️ When an endpoint is called for the first time, the ESP32 connects to the device.  
-> This may temporarily return **HTTP 408 (Request Timeout)**.
+Execution is task-driven:
 
-| Endpoint                              | Description                    | Parameters                                                                                                                        |
-| ------------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| `/device/:mac/setTime`                | Set device time                | `hour=0-23&minute=0-59&second=0-59`                                                                                               |
-| `/device/:mac/setFunMode`             | Enable/disable fun mode        | `funMode=true/false`                                                                                                              |
-| `/device/:mac/setOrientation`         | Set display orientation        | `orientation=0-2`                                                                                                                 |
-| `/device/:mac/clear`                  | Clear the display              | —                                                                                                                                 |
-| `/device/:mac/setBrightness`          | Adjust brightness              | `brightness=0-100`                                                                                                                |
-| `/device/:mac/setSpeed`               | Adjust animation speed         | `speed=0-100`                                                                                                                     |
-| `/device/:mac/ledOff`                 | Turn LEDs off                  | —                                                                                                                                 |
-| `/device/:mac/ledOn`                  | Turn LEDs on                   | —                                                                                                                                 |
-| `/device/:mac/deleteScreen`           | Delete a screen                | `screen=0-10`                                                                                                                     |
-| `/device/:mac/setPixel`               | Set individual pixel color     | `x=0-255&y=0-255&r=0-255&g=0-255&b=0-255`                                                                                         |
-| `/device/:mac/setClockMode`           | Configure clock mode           | `style=1-8&dayOfWeek=1-7&year=0-99&month=1-12&day=1-31`                                                                           |
-| `/device/:mac/setRhythmLevelMode`     | Set rhythm-level visualization | `style=0-4&l0=0-15&...&l14=0-15`                                                                                                  |
-| `/device/:mac/setRhythmAnimationMode` | Set rhythm animation           | `style=0-1&frame=0-7`                                                                                                             |
-| `/device/:mac/sendText`               | Send text                      | `text=Hello&animation=0-7&save_slot=1-10&speed=0-100&colorR=0-255&colorG=0-255&colorB=0-255&rainbow_mode=0-9&matrix_height=0-255` |
-| `/device/:mac/sendPNG`                | Send PNG                       | `hex=HEX-STRING` (checkout 'File to Hex' on Google to get the hex string)                                                         |
-| `/device/:mac/sendGIF`                | Send GIF                       | `hex=HEX-STRING` (checkout 'File to Hex' on Google to get the hex string)                                                         |
-| `/device/:mac/sendArbitrary`          | Send rainbow test framebuffer  |                                                                                                                                   |
----
+- `setup()` runs all setup tasks: filesystem mount, WiFi/BLE/webserver initialization.
+- `loop()` runs scheduled loop tasks with priorities and intervals.
 
-## 🖼️ GFX
-**ESP32-iPixel** features a very early stage GFX stack that allows rendering element-based views on the device by sending the structure via JSON.  
-Take a look at the example in [GFX.md](GFX.md)
+Core task groups:
 
+- WiFi: credential loading, STA connect attempts, AP fallback (`iPixel-ESP32` / `123456789`).
+- Bluetooth: pairing loading, client connect loop, command queue flushing.
+- Webserver: endpoint registry bootstrap and route attachment.
 
-## ⚙️ Installation
-1. Install **[PlatformIO](https://platformio.org/)**.
-2. Build and upload the firmware to the ESP32 using PlatformIO.
-3. Open a **Chromium-based browser** and visit [https://install.wled.me/](https://install.wled.me/).
-4. Click **Install** and select your device.
-5. Connect to WiFi:
-   * Click **Connect to WiFi** and wait for the scan to finish.
-   * Select your WiFi network and enter credentials.
-   * Wait for the connection to establish.
-6. Click **Visit Device** to get the IP address.
+The API endpoint system is static-registration based: each endpoint declares an `Endpoint` object, and the webserver setup iterates the registry and attaches handlers.
 
----
-## 📝 Todo
-* Support `sendText` for other matrices than 96x16
-* Device pairings (save devices instead of always using the mac)
-* Password or key-based protection
-* Connection improvements (faster connect? better disconnect handling?)
-* Clock Mode via NTP (set Display as clock)
-* Web Flasher Support
----
+## API Model
 
-## 🙏 Credits
-Reverse engineering of the protocol by **[lucagoc](https://github.com/lucagoc)** via his **[iPixel-CLI](https://github.com/lucagoc/iPixel-CLI)**.
+The API is ID-based, not MAC-in-path.
 
-## 🤖 AI Disclaimer
-Some descriptions and code-snippets in this repository are generated by artificial intelligence.  
+1. Add/list/update/remove Bluetooth pairings.
+2. Use the pairing `id` as `device` query parameter on control endpoints.
+3. Commands are encoded into BLE frames and pushed to a per-device queue.
+
+Main endpoint groups:
+
+- Bluetooth pairings: `/bluetooth/pairings/*`
+- WiFi pairings and scan: `/wifi/pairings/*`, `/wifi/scan/*`
+- Raw control: `/control/raw/*`
+
+Raw control endpoints include:
+
+- `clear`, `deleteScreen`, `setBrightness`, `setSpeed`, `setTime`, `setFunMode`, `setLED`, `setOrientation`, `setPixel`
+- `setClockMode`, `setRhythmAnimationMode`, `setRhythmLevelMode`
+- `sendText`, `sendPNG`, `sendGIF`
+
+Notes:
+
+- All control requests require `device=<pairing_id>`.
+- Binary image/text payloads are passed as encoded query values and transformed into protocol frames server-side.
+- Parameter validation throws exceptions that are mapped to HTTP error codes by the webserver wrapper.
+
+## Library-First BLE API (Step 1)
+
+A new additive facade is available for app-style usage without depending on webserver or WiFi modules:
+
+- `src/iPixelBleClient.h`
+- `src/iPixelBleClient.cpp`
+
+This is intentionally non-breaking: existing REST endpoints and firmware flow remain unchanged.
+
+Minimal usage:
+
+```cpp
+#include "iPixelBleClient.h"
+
+iPixelBLE::Client matrix("19:2D:FE:55:52:AA");
+
+void setup() {
+	Serial.begin(115200);
+	iPixelBLE::Client::init("MyController");
+
+	matrix.connect();
+	matrix.setBrightness(80);
+	matrix.sendText("Hello", 0, 1, 50, 255, 255, 255, 0, 16, 16);
+}
+
+void loop() {
+	matrix.loop();
+}
+```
+
+Why this helps the cleanup plan:
+
+- Third-party apps can now consume a direct BLE API layer first.
+- We can remove webserver/WiFi/demo modules later, after parity is validated.
+
+## Repository Map
+
+- `src/main.cpp`: firmware entrypoint and task runner.
+- `src/Tasking.h`: lightweight scheduler and task registry.
+- `src/webserver/`: HTTP server, endpoint registration, request param helpers.
+- `src/bluetooth/`: Bluetooth pairing model, persistence, connect/queue loops, pairing endpoints.
+- `src/wifi/`: WiFi pairing model, persistence, scan endpoints, connect strategy.
+- `src/control/`: raw device control endpoints.
+- `src/iPixelCommands.*`: protocol frame builders and input range checks.
+- `src/Helpers.*`: CRC32, endian/bit transforms, hex parsing, PNG encoding helpers.
+- `include/Font*.h`: bundled font data used by text command encoding.
+- `scripts/`: font conversion and maintenance tooling.
+- `test/`: native test scaffolding.
+
+## Build and Flash
+
+Prerequisites:
+
+- PlatformIO CLI or VS Code PlatformIO extension
+
+Common commands:
+
+```bash
+# Build default target (esp32s3dev)
+pio run
+
+# Upload firmware
+pio run -t upload
+
+# Serial monitor
+pio device monitor -b 115200
+```
+
+Available environments in `platformio.ini`:
+
+- `esp32s3dev` (default)
+- `esp32dev`
+- `esp32c3dev`
+
+## Key Documentation
+
+- `README_API.md`: current API-oriented usage and examples.
+- `iPixel_PROTOCOL.md`: protocol notes and frame structure.
+- `GFX.md`: early GFX ideas and payload shape.
+- `SENDTEXT_REFACTOR_PLAN.md`: sendText architecture and migration details.
+- `IMPLEMENTATION_INDEX.md`: index for font + sendText workstream.
+
+## Credits
+
+Protocol reverse-engineering work builds on community research, especially:
+
+- https://github.com/lucagoc/iPixel-CLI
+- https://github.com/DonKracho/ESPHome-external-component-for-iPixel-ble-devices
